@@ -1,6 +1,7 @@
 package dev.noire.brickbreaker;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -23,6 +24,7 @@ public class GamePanel extends JPanel {
 	private Graphics2D g;
 	
 	//entities
+	private Map theMap;
 	private HUD theHud;
 	private Ball theBall;
 	private Paddle thePaddle;
@@ -30,6 +32,7 @@ public class GamePanel extends JPanel {
 	//constructor
 	public GamePanel() {
 		//entities
+		theMap = new Map(6, 10);
 		theHud = new HUD();
 		theBall = new Ball();
 		thePaddle = new Paddle();
@@ -61,6 +64,31 @@ public class GamePanel extends JPanel {
 			if(theBall.getX() +(theBall.getBallSize()/2) > xMouse+((thePaddle.getWidth()/4)*3))
 				theBall.setDx(theBall.getDx() +.5);
 		}
+		
+		//BALL VS BRICKS:
+		A: for(int row=0; row<theMap.getMapArray().length; row++) {
+			for(int col=0; col<theMap.getMapArray()[0].length; col++) {
+				if(theMap.getMapArray()[row][col] > 0) {
+					
+					int brickx = col*theMap.getBrickWidth()+Map.HOR_PAD;
+					int bricky = row*theMap.getBrickHeight()+Map.VERT_PAD;
+					int brickWidth = theMap.getBrickWidth();
+					int brickHeight = theMap.getBrickHeight();
+					
+					Rectangle brickRect = new Rectangle(brickx, bricky, brickWidth, brickHeight);
+					
+					if(ballRect.intersects(brickRect)) {
+						
+						theMap.hitBrick(row, col);
+						theBall.setDy(-theBall.getDy());
+						theHud.addToScore(5);
+						break A;
+					}
+					
+				}
+			}
+		}
+		
 	}
 	
 	public void update() {
@@ -76,7 +104,17 @@ public class GamePanel extends JPanel {
 		theHud.draw(g);
 		theBall.draw(g);
 		thePaddle.draw(g);
+		theMap.draw(g);
 		
+		if(theMap.isThereAWinner()) {
+			drawWinner();
+			running = false;
+		}
+		
+		/*if(theBall.isThereALoser()) {
+			drawLoser();
+			running = false;
+		}*/
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -108,6 +146,18 @@ public class GamePanel extends JPanel {
 			thePaddle.mouseMoved(e.getX() -(thePaddle.getWidth()/2));
 			xMouse = e.getX() -(thePaddle.getWidth()/2);
 		}
+	}
+	
+	public void drawWinner() {
+		g.setColor(Color.GREEN);
+		g.setFont(new Font("Comic Sans MS", Font.PLAIN, 150));
+		g.drawString("WINNER!!!", 150, 300);
+	}
+	
+	public void drawLoser() {
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("Comic Sans MS", Font.PLAIN, 150));
+		g.drawString("LOSER!!!!!", 150, 300);
 	}
 	
 }
