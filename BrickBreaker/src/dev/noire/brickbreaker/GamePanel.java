@@ -18,6 +18,9 @@ public class GamePanel extends JPanel {
 	//fields
 	private boolean running;
 	
+	private boolean screenShakeActive;
+	private long screenShakeTimer;
+	
 	private MyMouseMotionListener theMouseListener;
 	private int xMouse;
 	
@@ -31,6 +34,7 @@ public class GamePanel extends JPanel {
 	private Paddle thePaddle;
 	
 	private ArrayList<PowerUp> powerUps;
+	private ArrayList<BrickSplosion> brickSplosions;
 	
 	//constructor
 	public GamePanel() {
@@ -41,9 +45,13 @@ public class GamePanel extends JPanel {
 		thePaddle = new Paddle();
 		
 		powerUps = new ArrayList<PowerUp>();
+		brickSplosions = new ArrayList<BrickSplosion>();
 		
 		//fields
 		running = true;
+		
+		screenShakeActive = false;
+		screenShakeTimer = System.nanoTime();
 		
 		theMouseListener = new MyMouseMotionListener();
 		this.addMouseMotionListener(theMouseListener);
@@ -99,6 +107,12 @@ public class GamePanel extends JPanel {
 							theMap.getMapArray()[row][col] = 0;
 						}
 						
+						if(theMap.getMapArray()[row][col] == 1) {
+							brickSplosions.add(new BrickSplosion(brickx, bricky, theMap));
+							screenShakeActive = true;
+							screenShakeTimer = System.nanoTime();
+						}
+						
 						theMap.hitBrick(row, col);
 						theBall.setDy(-theBall.getDy());
 						theHud.addToScore(5);
@@ -116,8 +130,17 @@ public class GamePanel extends JPanel {
 		theBall.update();
 		thePaddle.update();
 		
+		for(int i=0; i<brickSplosions.size(); i++) {
+			brickSplosions.get(i).update();
+			if(!brickSplosions.get(i).getIsActive())
+				brickSplosions.remove(i);
+		}
+		
 		for(PowerUp pu : powerUps)
 			pu.update();
+		
+		if((System.nanoTime()-screenShakeTimer)/1000000 > 300 && screenShakeActive)
+			screenShakeActive = false;
 		
 	}
 	
@@ -129,6 +152,9 @@ public class GamePanel extends JPanel {
 		thePaddle.draw(g);
 		theMap.draw(g);
 		
+		for(BrickSplosion bs : brickSplosions)
+			bs.draw(g);
+		
 		for(PowerUp pu : powerUps)
 			pu.draw(g);
 		
@@ -137,16 +163,19 @@ public class GamePanel extends JPanel {
 			running = false;
 		}
 		
-		/*if(theBall.isThereALoser()) {
+		if(theBall.isThereALoser()) {
 			drawLoser();
 			running = false;
-		}*/
+		}
 	}
 	
 	public void paintComponent(Graphics g) {
 		int xPos = 0;
 		int yPos = 0;
-		
+		if(screenShakeActive) {
+			xPos = (int)(Math.random()*10)-5;
+			yPos = (int)(Math.random()*10)-5;
+		}
 		Graphics2D g2 = (Graphics2D)g;
 		g2.drawImage(image, xPos, yPos, BBMain.WIDTH, BBMain.HEIGHT, null);
 		g2.dispose();
