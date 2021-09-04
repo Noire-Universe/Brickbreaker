@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
@@ -29,6 +30,8 @@ public class GamePanel extends JPanel {
 	private Ball theBall;
 	private Paddle thePaddle;
 	
+	private ArrayList<PowerUp> powerUps;
+	
 	//constructor
 	public GamePanel() {
 		//entities
@@ -36,6 +39,8 @@ public class GamePanel extends JPanel {
 		theHud = new HUD();
 		theBall = new Ball();
 		thePaddle = new Paddle();
+		
+		powerUps = new ArrayList<PowerUp>();
 		
 		//fields
 		running = true;
@@ -54,6 +59,16 @@ public class GamePanel extends JPanel {
 	private void checkCollision() {
 		Rectangle ballRect = theBall.getRect();
 		Rectangle paddleREct = thePaddle.getRect();
+		
+		//DEALING WITH POWERUPS:
+		for(int i=0; i<powerUps.size(); i++) {
+			if(powerUps.get(i).getType() == PowerUp.WIDEPADDLE) {
+				if(powerUps.get(i).getRect().intersects(paddleREct) && !powerUps.get(i).getWasUsed()) {
+					powerUps.get(i).setWasUsed(true);
+					thePaddle.setWidth(thePaddle.getWidth()*2);
+				}
+			}
+		}
 		
 		//BALL VS PADDLE:
 		if(ballRect.intersects(paddleREct)) {
@@ -79,6 +94,11 @@ public class GamePanel extends JPanel {
 					
 					if(ballRect.intersects(brickRect)) {
 						
+						if(theMap.getMapArray()[row][col] > 4) {
+							powerUps.add(new PowerUp(brickx, bricky, theMap.getMapArray()[row][col], brickWidth, brickHeight));
+							theMap.getMapArray()[row][col] = 0;
+						}
+						
 						theMap.hitBrick(row, col);
 						theBall.setDy(-theBall.getDy());
 						theHud.addToScore(5);
@@ -96,6 +116,9 @@ public class GamePanel extends JPanel {
 		theBall.update();
 		thePaddle.update();
 		
+		for(PowerUp pu : powerUps)
+			pu.update();
+		
 	}
 	
 	public void draw() {
@@ -105,6 +128,9 @@ public class GamePanel extends JPanel {
 		theBall.draw(g);
 		thePaddle.draw(g);
 		theMap.draw(g);
+		
+		for(PowerUp pu : powerUps)
+			pu.draw(g);
 		
 		if(theMap.isThereAWinner()) {
 			drawWinner();

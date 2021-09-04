@@ -51,7 +51,7 @@ public class Paddle {
 		if(altWidth) {
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Comic Sans MS", Font.PLAIN, 18));
-			g.drawString(" ..shrinkin in: " + (9-((System.nanoTime()-widthTimer)/1000000000)), (int)x, YPOS-18);
+			g.drawString(" ..shrinkin in: " + (9-((System.nanoTime()-widthTimer)/1000000000)), (int)x, YPOS+18);
 		}
 	}
 	

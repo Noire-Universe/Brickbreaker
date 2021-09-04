@@ -26,6 +26,8 @@ public class Map {
 				theMap[i][j] = r;
 			}
 		}
+		theMap[5][7] = 5;
+		theMap[5][2] = 6;
 	}
 	
 	public void draw(Graphics2D g) {
@@ -44,6 +46,12 @@ public class Map {
 					
 					if(theMap[row][col] == 4)
 						g.setColor(new Color(50, 0, 0));
+					
+					if(theMap[row][col] == 5)
+						g.setColor(PowerUp.WIDECOLOR);
+					
+					if(theMap[row][col] == 6)
+						g.setColor(PowerUp.FASTCOLOR);
 					
 					g.fillRect(col*brickWidth+HOR_PAD, row*brickHeight+VERT_PAD, brickWidth, brickHeight);
 					g.setColor(Color.DARK_GRAY);
